@@ -1,0 +1,22 @@
+[
+  {
+    "title": "Reset Password",
+    "content": "Users can reset their password from Settings > Security."
+  },
+  {
+    "title": "Account Creation",
+    "content": "Users can create an account by clicking Sign Up on the homepage."
+  },
+  {
+    "title": "Change Email",
+    "content": "Users can update their email address from Profile Settings."
+  },
+  {
+    "title": "Delete Account",
+    "content": "Accounts can be deleted from Settings > Privacy."
+  },
+  {
+    "title": "Contact Support",
+    "content": "Users can contact support using the Help Center."
+  }
+]
