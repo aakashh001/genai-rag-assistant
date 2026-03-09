@@ -3,7 +3,6 @@ import numpy as np
 from flask import Flask, request, jsonify, render_template
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 from google import genai
 import os
 from dotenv import load_dotenv
@@ -14,12 +13,9 @@ load_dotenv()
 # Initialize Gemini client
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-# Load embedding model
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-
 app = Flask(__name__)
 
-# Load document knowledge base
+# Load documents
 with open("docs.json") as f:
     documents = json.load(f)
 
@@ -39,23 +35,29 @@ def chunk_text(text, chunk_size=300):
 
 
 # ---------------------------
-# Generate Embeddings
+# Prepare Text Corpus
 # ---------------------------
-def get_embedding(text):
-    return vectorizer.transform([text]).toarray()[0]
-
 all_text = []
 
 for doc in documents:
     chunks = chunk_text(doc["content"])
     all_text.extend(chunks)
 
+# Create TF-IDF vectorizer
 vectorizer = TfidfVectorizer()
 vectorizer.fit(all_text)
+
+
+# ---------------------------
+# Generate Embedding
+# ---------------------------
+def get_embedding(text):
+    return vectorizer.transform([text]).toarray()[0]
+
+
 # ---------------------------
 # Build Vector Store
 # ---------------------------
-
 vector_store = []
 
 for doc in documents:
@@ -107,12 +109,10 @@ def chat():
         data = request.json
         message = data["message"]
 
-        # Retrieve relevant document chunks
         results = search(message)
 
         context = "\n".join([r[1]["content"] for r in results])
 
-        # Prompt for LLM
         prompt = f"""
 You are a helpful assistant.
 
@@ -127,7 +127,6 @@ Question:
 If the answer is not in the context, say you don't have enough information.
 """
 
-        # Call Gemini model
         response = client.models.generate_content(
             model="gemini-2.0-flash",
             contents=prompt
@@ -161,6 +160,5 @@ def home():
 # Run Flask App
 # ---------------------------
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
