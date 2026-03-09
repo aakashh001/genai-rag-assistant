@@ -55,6 +55,7 @@ vectorizer.fit(all_text)
 # ---------------------------
 # Build Vector Store
 # ---------------------------
+
 vector_store = []
 
 for doc in documents:
