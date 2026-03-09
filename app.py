@@ -2,7 +2,8 @@ import json
 import numpy as np
 from flask import Flask, request, jsonify, render_template
 from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 from google import genai
 import os
 from dotenv import load_dotenv
@@ -41,9 +42,16 @@ def chunk_text(text, chunk_size=300):
 # Generate Embeddings
 # ---------------------------
 def get_embedding(text):
-    return embedding_model.encode(text)
+    return vectorizer.transform([text]).toarray()[0]
 
+all_text = []
 
+for doc in documents:
+    chunks = chunk_text(doc["content"])
+    all_text.extend(chunks)
+
+vectorizer = TfidfVectorizer()
+vectorizer.fit(all_text)
 # ---------------------------
 # Build Vector Store
 # ---------------------------
